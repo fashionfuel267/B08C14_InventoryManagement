@@ -12,7 +12,7 @@
 <div class="row">
     <div class="col-md-12">
         <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="OrderDate" class="control-label"></label>
                 <input asp-for="OrderDate" class="form-control" />
@@ -42,11 +42,12 @@
             </div>
             <div>
                 <button id="btnAdd" class="btn btn-dark">Add</button>
-                @Model.OrderDetails.Count
+                @* @Model.OrderDetails.Count *@
                 <table class="table table-bordered" id="tblOrderdetails">
                     <thead>
                         <tr>
                             <td>Serial</td>
+                            <td>Id</td>
                             <td>Product</td>
                             <td>Quantity</td>
                             <td>Price</td>
@@ -59,8 +60,9 @@
                             {
                                 <tr>
                                     <td class="serial">  @Html.Raw(i + 1)
-                                        <input type="hidden" asp-for="OrderDetails[@i].Id" />
+                                       
                                     </td>
+                                    <td> <input type="number" asp-for="OrderDetails[@i].Id" name="OrderDetails[@i].Id" /></td>
                                     <td>
                                         <select id="ddlTemplate" asp-for="OrderDetails[@i].ProductId" name="OrderDetails[@i].ProductId" class="form-control" asp-items="ViewBag.ProductId"></select>
                                     </td>
@@ -74,7 +76,7 @@
                                         <input type="number" asp-for="OrderDetails[@i].TotalPrice" name="OrderDetails[@i].TotalPrice" class="form-control" readonly />
                                     </td>
                                     <td>
-                                        <button class="btn btn-danger mb-2" onchange="calculateSubtotal()">Remove</button>
+                                        <button class="btn btn-danger mb-2" type="button" onchange="calculateSubtotal()">Remove</button>
                                     </td>
                                 </tr>
                             }
@@ -100,7 +102,13 @@
 
 
         $(document).ready(function () {
-            $(".btn-danger").hide();
+            $(".btn-danger").click(function(){
+                  $(this).closest("tr").remove();
+                         var index = $("#tblOrderdetails tbody tr").length;
+                                        showhidebtn(index)
+                reindexRows();
+            })
+            // $(".btn-danger").hide();
             $("#btnAdd").click(function (e) {
                 e.preventDefault();
 
@@ -110,29 +118,27 @@
                 var options = $("#ddlTemplate").html();
 
                 var newRow = `<tr>
-                                 <td class="serial">${index + 1}</td>
+                                 <td class="serial">${index + 1}
+
+                                 
+                                 </td>
+                                 <td> <input type="number" asp-for="OrderDetails[${index}].Id" name="OrderDetails[${index}].Id" /></td>
                                  <td>
                                      <select name="OrderDetails[${index}].ProductId" class="form-control">
                                          ${options}
                                      </select>
                                  </td>
-                                         <td><input type="number" name="OrderDetails[${index}].Quantity"  onchange="calculateSubtotal()"  class="form-control" /></td>
-                                         <td><input type="number" name="OrderDetails[${index}].Price" onchange="calculateSubtotal()"  class="form-control" /></td>
-                                         <td><input type="number" name="OrderDetails[${index}].TotalPrice"    class="form-control" /></td>
-                                         <td><button type="button" class="btn btn-danger btn-remove" onchange="calculateSubtotal()" >Remove</button></td>
+                                         <td><input type="number" name="OrderDetails[${index}].Quantity"  asp-for="OrderDetails[${index}].Quantity"  onchange="calculateSubtotal()"  class="form-control" /></td>
+                                         <td><input type="number" name="OrderDetails[${index}].Price"  asp-for="OrderDetails[${index}].Price" onchange="calculateSubtotal()"  class="form-control" /></td>
+                                         <td><input type="number" name="OrderDetails[${index}].TotalPrice" asp-for="OrderDetails[${index}].TotalPrice"    class="form-control" /></td>
+                                         <td><button type="button" class="btn btn-danger btn-remove" type="button" onchange="calculateSubtotal()" >Remove</button></td>
                              </tr>`;
-
+                            
                 $("#tblOrderdetails tbody").append(newRow);
             });
 
             // Remove button
-            $(document).on("click", ".btn-remove", function () {
-                $(this).closest("tr").remove();
-                         var index = $("#tblOrderdetails tbody tr").length;
-                                        showhidebtn(index)
-                reindexRows();
-
-            });
+            
 
             // Reindex after remove
             function reindexRows() {
@@ -165,8 +171,8 @@
                                     var tblbody = $("#tblOrderdetails").find("tbody")
                                     tblbody.find('tr').each(function () {
                                                 console.log($(this).find("td:eq(2) input[type=number]").val())
-                                                var quantity = $(this).find("td:eq(2) input[type=number]").val();
-                                                var unitprice = $(this).find("td:eq(3) input[type=number]").val();
+                                                var quantity = $(this).find("td:eq(3) input[type=number]").val();
+                                                var unitprice = $(this).find("td:eq(4) input[type=number]").val();
 
                                         var subtotal = (quantity * unitprice)
                                         total = total + subtotal
@@ -175,7 +181,7 @@
 
                                         console.log(total)
                                         console.log(subtotal)
-                                                $(this).find("td:eq(4) input[type=number]").val(subtotal);
+                                                $(this).find("td:eq(5) input[type=number]").val(subtotal);
                                                 $("#TotalAmount").val(total);
                                     })
                     }

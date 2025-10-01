@@ -75,6 +75,9 @@
                             {
                                 <tr>
                                     <td>
+                                        @Html.DisplayFor(modelItem => d.Id)
+                                    </td>
+                                    <td>
                                         @Html.DisplayFor(modelItem => d.Product.Name)
                                     </td>
                                     <td>
@@ -88,7 +91,7 @@
                                     </td>
 
                                     <td>
-                                        <a asp-action="Edit" asp-route-id="@d.Id">Edit</a> |
+                                        <button onclick="Edit(@d.Id)"  >Edit</button> |
                                         <a asp-action="Details" asp-route-id="@d.Id">Details</a> |
                                         <a asp-action="Delete" asp-route-id="@d.Id">Delete</a>
                                     </td>
@@ -101,3 +104,126 @@
 }
     </tbody>
 </table>
+@* Edit Modal *@
+
+
+@* <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+    Launch demo modal
+</button>
+ *@
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <form asp-action="Edit">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <div class="form-group">
+                                <label id="OrderIdlbl" class="control-label">OrderId</label>
+                                <input id="OrderId" class="form-control" />
+                               
+                            </div>
+                            <div class="form-group">
+                                <label id="ProductIdlbl" class="control-label"> Product</label>
+                                <input id="ProductId" class="form-control" asp-items="@ViewBag.ProductId"/>
+                            </div>
+                            <div class="form-group">
+                                <label id="Quantitylbl" class="control-label">Quantity</label>
+                                <input id="Quantity" class="form-control" />
+                                
+                            </div>
+                            <div class="form-group">
+                                <label id="UnitPricelbl" class="control-label">Unit Price</label>
+                                <input id="UnitPrice" class="form-control" />
+                               
+                            </div>
+                            <div class="form-group">
+                                <label id="TotalPricelbl" class="control-label">Total Price</label>
+                                <input id="TotalPrice" class="form-control" />
+                                
+                            </div>
+                            <input type="hidden" id="Id" />
+                           
+                            
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnUpdate">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+            $(document).ready(function(){
+                $("#btnUpdate").click(function(){
+
+                       $.ajax({
+              url:'/OrderDetails/Update/',
+               type:'POST',
+               data:{
+                Id:    $('#Id').val(),
+                OrderId:   $("#OrderId").val(),
+               ProductId:    $("#ProductId").val(),
+                 Quantity:  $("#Quantity").val(),
+              UnitPrice:     $("#UnitPrice").val(),
+               TotalPrice:    $("#TotalPrice").val()
+               },
+               success:function(res){
+                   console.log(res)
+                  
+
+            $("#exampleModal").modal('hide')
+            clearALL();
+               },
+               error:function(err){
+               console.log(err)
+               }
+           })
+                })
+            })
+        function Edit(id){
+            
+           $.ajax({
+              url:'/OrderDetails/GetById/'+id,
+               type:'GET',
+               success:function(res){
+                   console.log(res)
+                   $('#Id').val(res.id)
+                   $("#OrderId").val(res.orderId)
+                   $("#ProductId").val(res.productId)
+                   $("#Quantity").val(res.quantity)
+                   $("#UnitPrice").val(res.unitPrice)
+                   $("#TotalPrice").val(res.totalPrice)
+               
+            $("#exampleModal").modal('show')
+               },
+               error:function(err){
+               console.log(err)
+               }
+           })
+
+        }
+        function clearALL(){
+              $('#Id').val(res.id)
+                   $("#OrderId").val('')
+                   $("#ProductId").val('')
+                   $("#Quantity").val('')
+                   $("#UnitPrice").val(0)
+                   $("#TotalPrice").val('')
+        }
+    </script>
+}

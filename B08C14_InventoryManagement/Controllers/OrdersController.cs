@@ -123,10 +123,24 @@ namespace B08C14_InventoryManagement.Controllers
             {
                 try
                 {
+                    order.UpdatedAt = DateTime.Now;
+                    order.UpdatedBy = User.Identity.Name ?? "Default";
+                    order.OrderDetails = order.OrderDetails;
+
+                    var od = _context.OrderDetails.Where(o => o.OrderId.Equals(order.Id)).AsNoTracking();
+                    //var rid= order.OrderDetails.Contains(od);
+                    foreach (var item in od)
+                    {
+                        if (!order.OrderDetails.Any(o => o.Id == item.Id))
+                        {
+                            _context.OrderDetails.Remove(item);
+                        }
+                    }
                     _context.Update(order);
+
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException e)
                 {
                     if (!OrderExists(order.Id))
                     {
@@ -134,8 +148,12 @@ namespace B08C14_InventoryManagement.Controllers
                     }
                     else
                     {
-                        throw;
+                        ModelState.AddModelError("", e.InnerException.Message ?? e.Message);
                     }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", ex.InnerException.Message ?? ex.Message);
                 }
                 return RedirectToAction(nameof(Index));
             }
