@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using B08C14_InventoryManagement.Data;
+using B08C14_InventoryManagement.Pagination;
 
 namespace B08C14_InventoryManagement.Controllers
 {
@@ -19,10 +20,49 @@ namespace B08C14_InventoryManagement.Controllers
         }
 
         // GET: Orders
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
         {
-            var applicationDbContext = _context.Orders.Include(o => o.Customer).Include(o=>o.OrderDetails).ThenInclude(o=>o.Product);
-            return View(await applicationDbContext.ToListAsync());
+            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
+            ViewData["CurrentSort"] = sortOrder;
+            var applicationDbContext =await _context.Orders.Include(o => o.Customer).Include(o=>o.OrderDetails).ThenInclude(o=>o.Product).ToListAsync();
+            ViewData["CurrentFilter"] = searchString;
+
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
+            ViewData["CurrentFilter"] = searchString;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                applicationDbContext = applicationDbContext.Where(s => s.Customer.Name.ToLower().Contains(searchString.ToLower())
+                                       ).ToList();
+            }
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    applicationDbContext = applicationDbContext.OrderByDescending(s => s.Customer.Name).ToList();
+                    break;
+                case "Date":
+                    applicationDbContext = applicationDbContext.OrderBy(s => s.OrderDate).ToList();
+                    break;
+                case "date_desc":
+                    applicationDbContext = applicationDbContext.OrderByDescending(s => s.OrderDate).ToList();
+                    break;
+                default:
+                    applicationDbContext = applicationDbContext.OrderBy(s => s.Customer.Name).ToList();
+                    break;
+            }
+           // return View( applicationDbContext.ToList());
+            int pageSize = 2;
+            return View(await PaginatedList<Order>.CreateAsync(applicationDbContext, pageNumber ?? 1, pageSize));
         }
 
         // GET: Orders/Details/5

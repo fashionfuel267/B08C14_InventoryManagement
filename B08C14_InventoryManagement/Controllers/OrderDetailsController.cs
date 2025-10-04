@@ -84,8 +84,8 @@ namespace B08C14_InventoryManagement.Controllers
             {
                 return NotFound();
             }
-            ViewData["OrderId"] = new SelectList(_context.Orders, "Id", "Id", orderDetails.OrderId);
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Id", orderDetails.ProductId);
+            //ViewData["OrderId"] = new SelectList(_context.Orders, "Id", "Id", orderDetails.OrderId);
+            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Name", orderDetails.ProductId);
             return View(orderDetails);
         }
         public async Task<JsonResult> GetById(int? id)
@@ -100,7 +100,7 @@ namespace B08C14_InventoryManagement.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("OrderId,ProductId,Quantity,UnitPrice,TotalPrice,Id,CreatedAt,CreatedBy,UpdatedAt,UpdatedBy,IsActive")] OrderDetails orderDetails)
+        public async Task<IActionResult> Edit(int id,  OrderDetails orderDetails)
         {
             if (id != orderDetails.Id)
             {
